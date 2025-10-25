@@ -1,4 +1,3 @@
-
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
@@ -85,6 +84,12 @@ CheckpointScript := class(creative_device):
     @editable
     audSpawner9 :audio_player_device = audio_player_device{}
 
+    @editable
+    audSpawner10 :audio_player_device = audio_player_device{}
+
+    @editable
+    audSpawner11 :audio_player_device = audio_player_device{}
+
     
 
     # Runs when the device is started in a running game
@@ -105,11 +110,26 @@ CheckpointScript := class(creative_device):
         playerCheckpoint3.Register(Agent)
         audSpawner3.Play()
     OnCheckpoint4Event(Agent:agent) :void=
-        playerCheckpoint3.Register(Agent)
+        playerCheckpoint4.Register(Agent)
         audSpawner4.Play()
     OnCheckpoint5Event(Agent:agent) :void=
-        playerCheckpoint3.Register(Agent)
+        playerCheckpoint5.Register(Agent)
         audSpawner5.Play()
     OnCheckpoint6Event(Agent:agent) :void=
-        playerCheckpoint3.Register(Agent)
+        playerCheckpoint6.Register(Agent)
         audSpawner6.Play()
+    OnCheckpoint7Event(Agent:agent) :void=
+        playerCheckpoint7.Register(Agent)
+        audSpawner7.Play()
+    OnCheckpoint8Event(Agent:agent) :void=
+        playerCheckpoint8.Register(Agent)
+        audSpawner8.Play()
+    OnCheckpoint9Event(Agent:agent) :void=
+        playerCheckpoint9.Register(Agent)
+        audSpawner9.Play()
+    OnCheckpoint10Event(Agent:agent) :void=
+        playerCheckpoint10.Register(Agent)
+        audSpawner10.Play()
+    OnCheckpoint11Event(Agent:agent) :void=
+        playerCheckpoint11.Register(Agent)
+        audSpawner11.Play()
