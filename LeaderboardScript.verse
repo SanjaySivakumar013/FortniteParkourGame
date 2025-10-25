@@ -13,6 +13,7 @@ TimeEntry := class():
     P : player
     T : float
 
+#makes time more readable
 FormatTime(Seconds: float): string =
     if:
         TotalMs := Round[Seconds * 100.0]                
@@ -32,9 +33,7 @@ FormatTime(Seconds: float): string =
         ToString(Seconds)
 
 ObbyLeaderboardDevice := class(creative_device):
-
-    # @editable StartTrigger  : player_checkpoint_device = player_checkpoint_device{}
-    # @editable FinishTrigger : player_checkpoint_device = player_checkpoint_device{}
+    #variables
     @editable Start2Trigger  : trigger_device = trigger_device{}
     @editable Finish2Trigger : trigger_device = trigger_device{}
     @editable Announcer     : hud_message_device = hud_message_device{}  
@@ -44,18 +43,22 @@ ObbyLeaderboardDevice := class(creative_device):
     var StartTimes : [player]?float = map{}  
     var BestTimes  : [player]?float = map{}  
 
+
     OnBegin<override>()<suspends>:void =
         Start2Trigger.TriggeredEvent.Subscribe(OnStart)
         Start2Trigger.TriggeredEvent.Subscribe(OnTriggered)
         Finish2Trigger.TriggeredEvent.Subscribe(OnFinish)
         RestartTrigger.InteractedWithEvent.Subscribe(OnRestart)
-        # RestartTrigger.InteractedWithEvent.Subscribe(DamagePlayer)
 
+    #runs when the first checkpoint is stepped on
+    #displays message to triggering player
     OnStart(Agent : ?agent) : void =
         if (TriggeringAgent := Agent?, P := player[TriggeringAgent]):
             if (set StartTimes[P] = option{GetSimulationElapsedTime()}):
                 AnnounceTo(P, "Run started. Go!")
 
+    #runs when the last checkpoint is stepped on
+    #broadcasts best time to triggering player
     OnFinish(Agent: ?agent): void =
         if (P := player[Agent?]):
             Print("finished: P stored")
@@ -68,24 +71,24 @@ ObbyLeaderboardDevice := class(creative_device):
                     BroadcastTop3()
                     Print("broadcasted")
     
+    #sets player to start when restart button is pressed
     OnRestart(Agent:agent): void=
         if (P := player[Agent]):
             if (set StartTimes[P] = option{GetSimulationElapsedTime()}):
                 RestartCheckpoint.Register(Agent)
                 DamagePlayer(Agent)
 
-
+    #changes team to allow restart button interation
     OnTriggered(Agent:?agent):void =
         if (ValidAgent := Agent?):
             if (ChangeTeam[ValidAgent, 1]):
-                # Success handled in ChangeTeam
                 return
             else:
                 Print("Failed to change team")
         else:
             Print("No valid agent found")
 
-
+    
     ChangeTeam(Agent:agent, TeamIndex:int)<decides><transacts>:void =
         if:
             TeamCollection := GetPlayspace().GetTeamCollection()
@@ -102,14 +105,13 @@ ObbyLeaderboardDevice := class(creative_device):
         if (Character := Agent.GetFortCharacter[]):
             Character.Damage(1000.0)
             if (ChangeTeam[Agent, 0]):
-                # Success handled in ChangeTeam
                 return
             else:
                 Print("Failed to change team")
 
 
                 
-
+    #checks if new time is better than previous time and updates if required
     UpdatePersonalBest(P: player, NewTime: float): void =
         if (BT := BestTimes[P]?):
             if (NewTime < BT):
@@ -121,17 +123,15 @@ ObbyLeaderboardDevice := class(creative_device):
             if (set BestTimes[P] = option{NewTime}):
                 AnnounceTo(P, "First time set: " + FormatTime(NewTime))
 
-    # Fix: Move comparator to class scope
+    #Moved comparator to class scope
     TimeLess(L:TimeEntry, R:TimeEntry)<computes><decides>:void = L.T < R.T
 
+    #broadcasts best time after course is finished
     BroadcastTop3(): void =
         var Entries : []TimeEntry = array{}
         for (P -> BT : BestTimes):
             if (T := BT?):
                 set Entries += array{ TimeEntry{P:=P, T:=T} }
-
-        # SortBy is not available in Verse, so we need to implement our own sorting logic
-        # For now, we'll just use the unsorted entries
         Sorted := Entries
 
         if (Sorted.Length = 0):
