@@ -16,9 +16,12 @@ RotationScript := class(creative_device):
     
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
+        #creates a list of all the objects with tags (X,Y, or Z)
         XObjectsList := FindCreativeObjectsWithTag(X{})
         YObjectsList := FindCreativeObjectsWithTag(Y{})
         ZObjectsList := FindCreativeObjectsWithTag(Z{})
+
+        #calls specific rotation functions for respective tags each frame
         loop:
             tempint := 1
             block:
@@ -46,6 +49,7 @@ RotationScript := class(creative_device):
                 break
             Sleep(1.0)
     
+    #Applys smooth rotation around the +Z axis
     SmoothRotationPropYaw(Prop:creative_prop, speed:float)<suspends>:void=
         Transform_Prop := Prop.GetTransform()
         Translation_Prop := Transform_Prop.Translation
@@ -53,6 +57,7 @@ RotationScript := class(creative_device):
         NewRotation := Rotation_Prop.ApplyYaw(180.0)
         MoveResult := Prop.MoveTo(Translation_Prop, NewRotation, speed)
     
+    #Applys smooth rotation around the +Y axis
     SmoothRotationPropPitch(Prop:creative_prop, speed:float)<suspends>:void=
         Transform_Prop := Prop.GetTransform()
         Translation_Prop := Transform_Prop.Translation
@@ -60,6 +65,7 @@ RotationScript := class(creative_device):
         NewRotation := Rotation_Prop.ApplyYaw(180.0)
         MoveResult := Prop.MoveTo(Translation_Prop, NewRotation, speed)
     
+    #Applys smooth rotation around the +X axis
     SmoothRotationPropRoll(Prop:creative_prop, speed:float)<suspends>:void=
         Transform_Prop := Prop.GetTransform()
         Translation_Prop := Transform_Prop.Translation
