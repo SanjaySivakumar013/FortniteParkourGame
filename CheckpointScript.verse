@@ -10,7 +10,7 @@ Checkpoint<public><localizes>:message := "Player Checkpoints"
 # A Verse-authored creative device that can be placed in a level
 CheckpointScript := class(creative_device):
 
-    #variables
+    #Checkpoint variables
     @editable:
         #The categories this editable belongs to.
         Categories := array{Checkpoint}
@@ -56,7 +56,7 @@ CheckpointScript := class(creative_device):
         Categories := array{Checkpoint}
     playerCheckpoint11 :player_checkpoint_device = player_checkpoint_device{}
 
-
+    #Audio spawner variables 
     @editable
     audSpawner1 :audio_player_device = audio_player_device{}
 
