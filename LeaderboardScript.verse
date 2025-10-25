@@ -1,7 +1,9 @@
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
+using { /Fortnite.com/Game }
 using { /Fortnite.com/Characters }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /Fortnite.com/Teams }
 
 # Fix: Use overload instead of localizes for string to message conversion
 ToMessage<localizes>(S : string) : message = "{S}"
@@ -31,8 +33,10 @@ FormatTime(Seconds: float): string =
 
 ObbyLeaderboardDevice := class(creative_device):
 
-    @editable StartTrigger  : player_checkpoint_device = player_checkpoint_device{}
-    @editable FinishTrigger : player_checkpoint_device = player_checkpoint_device{}
+    # @editable StartTrigger  : player_checkpoint_device = player_checkpoint_device{}
+    # @editable FinishTrigger : player_checkpoint_device = player_checkpoint_device{}
+    @editable Start2Trigger  : trigger_device = trigger_device{}
+    @editable Finish2Trigger : trigger_device = trigger_device{}
     @editable Announcer     : hud_message_device = hud_message_device{}  
     @editable RestartTrigger : button_device = button_device{}
     @editable RestartCheckpoint : player_checkpoint_device = player_checkpoint_device{}
@@ -41,32 +45,68 @@ ObbyLeaderboardDevice := class(creative_device):
     var BestTimes  : [player]?float = map{}  
 
     OnBegin<override>()<suspends>:void =
-        StartTrigger.FirstActivationPerAgentEvent.Subscribe(OnStart)
-        FinishTrigger.FirstActivationPerAgentEvent.Subscribe(OnFinish)
+        Start2Trigger.TriggeredEvent.Subscribe(OnStart)
+        Start2Trigger.TriggeredEvent.Subscribe(OnTriggered)
+        Finish2Trigger.TriggeredEvent.Subscribe(OnFinish)
         RestartTrigger.InteractedWithEvent.Subscribe(OnRestart)
-        RestartTrigger.InteractedWithEvent.Subscribe(DamagePlayer)
+        # RestartTrigger.InteractedWithEvent.Subscribe(DamagePlayer)
 
-    OnStart(Agent: agent): void =
-        if (P := player[Agent]):
+    OnStart(Agent : ?agent) : void =
+        if (TriggeringAgent := Agent?, P := player[TriggeringAgent]):
             if (set StartTimes[P] = option{GetSimulationElapsedTime()}):
                 AnnounceTo(P, "Run started. Go!")
 
-    OnFinish(Agent: agent): void =
-        if (P := player[Agent]):
+    OnFinish(Agent: ?agent): void =
+        if (P := player[Agent?]):
+            Print("finished: P stored")
             if (S := StartTimes[P]?):
+                Print("finished: S stored")
                 Elapsed := Max(0.0, GetSimulationElapsedTime() - S)
                 if (set StartTimes[P] = false):
+                    Print("finished: StartTimes set")
                     UpdatePersonalBest(P, Elapsed)
                     BroadcastTop3()
+                    Print("broadcasted")
     
     OnRestart(Agent:agent): void=
         if (P := player[Agent]):
             if (set StartTimes[P] = option{GetSimulationElapsedTime()}):
                 RestartCheckpoint.Register(Agent)
-    
+                DamagePlayer(Agent)
+
+
+    OnTriggered(Agent:?agent):void =
+        if (ValidAgent := Agent?):
+            if (ChangeTeam[ValidAgent, 1]):
+                # Success handled in ChangeTeam
+                return
+            else:
+                Print("Failed to change team")
+        else:
+            Print("No valid agent found")
+
+
+    ChangeTeam(Agent:agent, TeamIndex:int)<decides><transacts>:void =
+        if:
+            TeamCollection := GetPlayspace().GetTeamCollection()
+            Teams := TeamCollection.GetTeams()
+            TeamToJoin := Teams[TeamIndex]
+            TeamCollection.AddToTeam[Agent, TeamToJoin]
+        then:
+            Print("Agent added to team successfully")
+        else:
+            Print("Failed to add agent to team")
+
+
     DamagePlayer(Agent:agent) : void= 
-            if (Character := Agent.GetFortCharacter[]):
-                Character.Damage(1000.0)
+        if (Character := Agent.GetFortCharacter[]):
+            Character.Damage(1000.0)
+            if (ChangeTeam[Agent, 0]):
+                # Success handled in ChangeTeam
+                return
+            else:
+                Print("Failed to change team")
+
 
                 
 
